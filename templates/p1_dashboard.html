@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Alexa P1 - Identity Ghost</title>
+    <style>
+        body { background-color: #0a0a0a; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; }
+        .container { border: 2px solid #00ff00; margin: 50px auto; width: 80%; padding: 20px; border-radius: 15px; }
+        .status-light { height: 15px; width: 15px; background-color: #00ff00; border-radius: 50%; display: inline-block; }
+        input { background: #1a1a1a; color: #0f0; border: 1px solid #0f0; padding: 10px; width: 60%; }
+        button { background: #0f0; color: #000; padding: 10px 20px; font-weight: bold; cursor: pointer; border: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>[ALEXA PANEL P1: IDENTITY GHOST] <span class="status-light"></span></h1>
+        <p>Status: Master Admin Identity Encrypted</p>
+        
+        <input type="text" id="msgInput" placeholder="Type message for Alexa...">
+        <button onclick="sendCommand('text')">SEND</button>
+        <br><br>
+        <button onclick="startVoice()" style="background: red; color: white;">🎤 VOICE COMMAND</button>
+        
+        <div id="logs" style="margin-top: 20px; color: #888;"></div>
+    </div>
+
+    <script>
+        function sendCommand(type) {
+            let cmd = document.getElementById('msgInput').value;
+            fetch('/process_command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd, type: type})
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('logs').innerText = "Alexa: " + data.message;
+            });
+        }
+
+        function startVoice() {
+            // Web Speech API for Alexa Voice
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.start();
+            recognition.onresult = (event) => {
+                let speechToText = event.results[0][0].transcript;
+                document.getElementById('msgInput').value = speechToText;
+                sendCommand('voice');
+            };
+        }
+    </script>
+</body>
+</html>
